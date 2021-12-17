@@ -1,7 +1,7 @@
 package factory
 
-import "github.com/rodrigoengelberg/imersao-fullcycle-go/domain/repository"
+import "github.com/codeedu/imersao5-gateway/domain/repository"
 
 type RepositoryFactory interface {
-	CreateTranscationRepository() repository.TransactionRepository
+	CreateTransactionRepository() repository.TransactionRepository
 }

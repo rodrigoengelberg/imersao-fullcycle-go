@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/rodrigoengelberg/imersao-fullcycle-go/adapter/repository/fixture"
-	"github.com/rodrigoengelberg/imersao-fullcycle-go/domain/entity"
+	"github.com/codeedu/imersao5-gateway/adapter/repository/fixture"
+	"github.com/codeedu/imersao5-gateway/domain/entity"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"

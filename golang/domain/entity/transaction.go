@@ -22,10 +22,10 @@ func NewTransaction() *Transaction {
 
 func (t *Transaction) IsValid() error {
 	if t.Amount > 1000 {
-		return errors.New("You don't have limit to this transaction")
+		return errors.New("you dont have limit for this transaction")
 	}
 	if t.Amount < 1 {
-		return errors.New("The amount must be greater than 1")
+		return errors.New("the amount must be greater than 1")
 	}
 	return nil
 }

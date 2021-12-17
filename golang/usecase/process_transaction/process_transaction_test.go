@@ -1,9 +1,10 @@
 package process_transaction
 
 import (
+	mock_broker "github.com/codeedu/imersao5-gateway/adapter/broker/mock"
+	"github.com/codeedu/imersao5-gateway/domain/entity"
+	mock_repository "github.com/codeedu/imersao5-gateway/domain/repository/mock"
 	"github.com/golang/mock/gomock"
-	"github.com/rodrigoengelberg/imersao-fullcycle-go/domain/entity"
-	mock_repository "github.com/rodrigoengelberg/imersao-fullcycle-go/domain/repository/mock"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ func TestProcessTransaction_ExecuteInvalidCreditCard(t *testing.T) {
 		ID:                        "1",
 		AccountID:                 "1",
 		CreditCardNumber:          "40000000000000000",
-		CreditCardName:            "José da Silva",
+		CreditCardName:            "Wesley Silva",
 		CreditCardExpirationMonth: 12,
 		CreditCardExpirationYear:  time.Now().Year(),
 		CreditCardCVV:             123,
@@ -23,26 +24,31 @@ func TestProcessTransaction_ExecuteInvalidCreditCard(t *testing.T) {
 	expectedOutput := TransactionDtoOutput{
 		ID:           "1",
 		Status:       entity.REJECTED,
-		ErrorMessage: "Invalid credit card number",
+		ErrorMessage: "invalid credit card number",
 	}
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
 	repositoryMock := mock_repository.NewMockTransactionRepository(ctrl)
 	repositoryMock.EXPECT().
 		Insert(input.ID, input.AccountID, input.Amount, expectedOutput.Status, expectedOutput.ErrorMessage).
 		Return(nil)
-	usecase := NewProcessTransaction(repositoryMock)
+
+	producerMock := mock_broker.NewMockProducerInterface(ctrl)
+	producerMock.EXPECT().Publish(expectedOutput, []byte(input.ID), "transactions_result")
+
+	usecase := NewProcessTransaction(repositoryMock, producerMock, "transactions_result")
 	output, err := usecase.Execute(input)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedOutput, output)
 }
 
-func TestProcessTransaction_ExecuteRejectTranscation(t *testing.T) {
+func TestProcessTransaction_ExecuteRejectedTransaction(t *testing.T) {
 	input := TransactionDtoInput{
 		ID:                        "1",
 		AccountID:                 "1",
 		CreditCardNumber:          "4193523830170205",
-		CreditCardName:            "José da Silva",
+		CreditCardName:            "Wesley Silva",
 		CreditCardExpirationMonth: 12,
 		CreditCardExpirationYear:  time.Now().Year(),
 		CreditCardCVV:             123,
@@ -51,26 +57,33 @@ func TestProcessTransaction_ExecuteRejectTranscation(t *testing.T) {
 	expectedOutput := TransactionDtoOutput{
 		ID:           "1",
 		Status:       entity.REJECTED,
-		ErrorMessage: "You don't have limit to this transaction",
+		ErrorMessage: "you dont have limit for this transaction",
 	}
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
 	repositoryMock := mock_repository.NewMockTransactionRepository(ctrl)
 	repositoryMock.EXPECT().
 		Insert(input.ID, input.AccountID, input.Amount, expectedOutput.Status, expectedOutput.ErrorMessage).
 		Return(nil)
-	usecase := NewProcessTransaction(repositoryMock)
+
+	producerMock := mock_broker.NewMockProducerInterface(ctrl)
+	producerMock.EXPECT().Publish(expectedOutput, []byte(input.ID), "transactions_result")
+
+	usecase := NewProcessTransaction(repositoryMock, producerMock, "transactions_result")
+
 	output, err := usecase.Execute(input)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedOutput, output)
+
 }
 
-func TestProcessTransaction_ExecuteApprovedTranscation(t *testing.T) {
+func TestProcessTransaction_ExecuteApprovedTransaction(t *testing.T) {
 	input := TransactionDtoInput{
 		ID:                        "1",
 		AccountID:                 "1",
 		CreditCardNumber:          "4193523830170205",
-		CreditCardName:            "José da Silva",
+		CreditCardName:            "Wesley Silva",
 		CreditCardExpirationMonth: 12,
 		CreditCardExpirationYear:  time.Now().Year(),
 		CreditCardCVV:             123,
@@ -83,12 +96,18 @@ func TestProcessTransaction_ExecuteApprovedTranscation(t *testing.T) {
 	}
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
 	repositoryMock := mock_repository.NewMockTransactionRepository(ctrl)
 	repositoryMock.EXPECT().
 		Insert(input.ID, input.AccountID, input.Amount, expectedOutput.Status, expectedOutput.ErrorMessage).
 		Return(nil)
-	usecase := NewProcessTransaction(repositoryMock)
+
+	producerMock := mock_broker.NewMockProducerInterface(ctrl)
+	producerMock.EXPECT().Publish(expectedOutput, []byte(input.ID), "transactions_result")
+
+	usecase := NewProcessTransaction(repositoryMock, producerMock, "transactions_result")
 	output, err := usecase.Execute(input)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedOutput, output)
+
 }
